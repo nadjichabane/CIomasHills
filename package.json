@@ -1,0 +1,25 @@
+{
+  "name": "perumahan-subsidi-ciomas-bogor",
+  "version": "1.0.0",
+  "description": "Modern premium landing page for subsidized housing ads in Ciomas, Bogor",
+  "main": "public/index.html",
+  "scripts": {
+    "start": "echo 'Static site - no server needed'",
+    "build": "echo 'Static site - build not required'",
+    "test": "echo 'No tests specified' && exit 0",
+    "backup": "node scripts/backup-data.js",
+    "restore": "node scripts/restore-data.js"
+  },
+  "keywords": [
+    "real-estate",
+    "housing",
+    "landing-page",
+    "subsidized-housing",
+    "bogor",
+    "ciomas"
+  ],
+  "author": "Marketing Team - J&T CARGO",
+  "license": "PROPRIETARY",
+  "dependencies": {},
+  "devDependencies": {}
+}

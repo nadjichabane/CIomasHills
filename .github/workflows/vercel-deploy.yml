@@ -1,0 +1,76 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        working-directory: ./
+        
+    - name: Get deployment URL
+      id: deployment
+      run: |
+        DEPLOYMENT_URL=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+          "https://api.vercel.com/v6/deployments?teamId=${{ secrets.VERCEL_ORG_ID }}&projectId=${{ secrets.VERCEL_PROJECT_ID }}&limit=1" \
+          | jq -r '.deployments[0].url')
+        echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+        
+    - name: Create deployment status comment
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const url = '${{ steps.deployment.outputs.DEPLOYMENT_URL }}';
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `🚀 **Preview Deployment Ready!**\n\nVisit: https://${url}\n\n**Branch:** ${context.ref}\n**Commit:** ${context.sha.substring(0, 7)}`
+          });
+          
+    - name: Notify on production deploy
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const url = '${{ steps.deployment.outputs.DEPLOYMENT_URL }}';
+          github.rest.repos.createDispatchEvent({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            event_type: 'vercel_deployed',
+            client_payload: {
+              url: `https://${url}`,
+              branch: context.ref,
+              commit: context.sha.substring(0, 7),
+              environment: 'production'
+            }
+          });

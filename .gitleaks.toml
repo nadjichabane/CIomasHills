@@ -1,0 +1,70 @@
+title = "Gitleaks config for CiomasHills project"
+
+[[rules]]
+id = "github-token"
+description = "GitHub Token"
+regex = '''(gh[pousr]_[0-9a-zA-Z]{36}|github_pat_[0-9a-zA-Z]{22}_[0-9a-zA-Z]{59})'''
+entropy = 3.5
+tags = ["key", "github"]
+
+[[rules]]
+id = "vercel-token"
+description = "Vercel Token"
+regex = '''(vercel_[0-9a-zA-Z]{48})'''
+entropy = 4.0
+tags = ["key", "vercel"]
+
+[[rules]]
+id = "api-key"
+description = "Generic API Key"
+regex = '''(api[_-]?key[_-]?[0-9a-zA-Z]{32,45})'''
+entropy = 3.0
+tags = ["key", "api"]
+
+[[rules]]
+id = "firebase-key"
+description = "Firebase API Key"
+regex = '''AIza[0-9A-Za-z\\-_]{35}'''
+entropy = 3.5
+tags = ["key", "firebase"]
+
+[[rules]]
+id = "jwt"
+description = "JWT Token"
+regex = '''eyJ[a-zA-Z0-9]{10,}\\.eyJ[a-zA-Z0-9]{10,}\\.[a-zA-Z0-9_-]{10,}'''
+entropy = 6.0
+tags = ["key", "jwt"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN[\\s\\S]*?PRIVATE KEY-----'''
+entropy = 8.0
+tags = ["key", "private"]
+
+[[rules]]
+id = "password-in-code"
+description = "Password in code"
+regex = '''(?i)pass(word|wd|_)?[\\s]*?=[\\s]*?["'`][^"'`\\n]{4,}["'`]'''
+tags = ["password", "hardcoded"]
+
+[[rules]]
+id = "connection-string"
+description = "Database connection string"
+regex = '''(?i)(jdbc:|mysql://|postgresql://|mongodb://)[^"'\s]+'''
+tags = ["database", "connection"]
+
+[allowlist]
+paths = [
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "node_modules/**",
+    "public/**",
+    "data/sample-*.json"
+]
+
+files = [
+    "(.*?)\\.min\\.(js|css)",
+    "*.md"
+]
